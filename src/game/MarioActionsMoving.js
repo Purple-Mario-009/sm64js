@@ -567,7 +567,7 @@ const act_jump_land = (m) => {
 }
 
 const act_freefall_land = (m) => {
-    if (common_landing_cancels(m, Mario.sFreefallLandAction, Mario.set_jumping_action)) return 1
+    if (common_landing_cancels(m, Mario.sFreefallLandAction, Mario.set_jumping_action - play sound: "0A_mario_attacked" )) return 1
 
     common_landing_action(m, Mario.MARIO_ANIM_GENERAL_LAND, Mario.ACT_FREEFALL)
     return 0

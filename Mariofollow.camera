@@ -1,0 +1,353 @@
+<html>
+
+<body>
+    <canvas id="canvas">
+        </canvas>
+</body>
+
+</html>
+<script>
+    var audio = new Audio('sounds/theServerRoom.mp3');
+    audio.play();
+
+
+
+
+
+    // Create the canvas
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+
+    // Background image
+    var bgReady = false;
+    var bgImage = new Image();
+    bgImage.onload = function() {
+        bgReady = true;
+    };
+    bgImage.src = "images/gamemap.png";
+
+    //computer
+    var computerReady = false;
+    var computerImage = new Image();
+    computerImage.onload = function() {
+        computerReady = true;
+    };
+    computerImage.src = "images/computer1.png";
+    //hp box
+    var hpBoxReady = false;
+    var hpBoxImage = new Image();
+    hpBoxImage.onload = function() {
+        hpBoxReady = true;
+    };
+    hpBoxImage.src = "images/hpbox.png";
+    // player image
+    var playerReady = false;
+    var playerImage = new Image();
+    playerImage.onload = function() {
+        playerReady = true;
+    };
+    playerImage.src = "images/char.png";
+
+    // enemy image
+    var enemyReady = false;
+    var enemyImage = new Image();
+    enemyImage.onload = function() {
+        enemyReady = true;
+    };
+    enemyImage.src = "images/enemy_idle01.png";
+
+    var computer = {
+            wifi: true,
+            x: 399,
+            y: 200
+        }
+        // Game objects
+    var hpBox = {
+        restoreHealth: 34,
+        x: 300,
+        y: 300
+    }
+    var player = {
+        hackingSkill: 10,
+        stamina: 7,
+        health: 100,
+        sprintSpeed: 400,
+        weakSpeed: 150,
+        speed: 300 // movement in pixels per second
+    };
+    var enemy = {
+        speed: 250,
+        viewDistance: 40
+    };
+    var enemysCaught = 0;
+
+    // Handle keyboard controls
+    var keysDown = {};
+    addEventListener("keydown", function(e) {
+        keysDown[e.keyCode] = true;
+    }, false);
+
+    addEventListener("keyup", function(e) {
+        delete keysDown[e.keyCode];
+    }, false);
+
+    // Reset the game when the player catches a enemy
+    var reset = function() {
+        player.x = canvas.width / 2;
+        player.y = canvas.height / 2;
+
+        // Throw the enemy somewhere on the screen randomly
+        enemy.x = 32 + (Math.random() * (canvas.width - 64));
+        enemy.y = 32 + (Math.random() * (canvas.height - 64));
+    };
+
+
+
+    //w is 87
+    //a is 65
+    //s is 83
+    //d is 68
+    // Update game objects
+    var update = function(modifier) {
+        if (87 in keysDown) { // Player holding up
+            player.y -= player.speed * modifier;
+        }
+        if (83 in keysDown) { // Player holding down
+            player.y += player.speed * modifier;
+        }
+        if (65 in keysDown) { // Player holding left
+            player.x -= player.speed * modifier;
+        }
+        if (68 in keysDown) { // Player holding right
+            player.x += player.speed * modifier;
+        }
+
+        if (
+            player.x <= (0)) {
+            player.health -= 1;
+            console.log('health decreasing');
+        }
+    }
+    if (
+        player.y <= (0)) {
+
+        player.health -= 1;
+        console.log('health decreasing');
+    };
+
+    // Are they touching?
+    if (
+        player.x <= (enemy.x + 32) &&
+        enemy.x <= (player.x + 32) &&
+        player.y <= (enemy.y + 32) &&
+        enemy.y <= (player.y + 32)
+    ) {
+        ++enemysCaught;
+        reset();
+    }
+
+    // Draw everything
+    var render = function() {
+        if (bgReady) {
+            context.drawImage(bgImage, 0, 0);
+        }
+        if (computerReady) {
+            context.drawImage(computerImage, computer.x, computer.y);
+        }
+
+        if (hpBoxReady) {
+            context.drawImage(hpBoxImage, hpBox.x, hpBox.y);
+        }
+        if (playerReady) {
+            context.drawImage(playerImage, player.x, player.y);
+        }
+
+        if (enemyReady) {
+            context.drawImage(enemyImage, enemy.x, enemy.y);
+        }
+
+        // Score
+    };
+
+    function dieEvent() {
+        player.health = 100;
+    }
+
+    function updateHealth() {
+        context.fillStyle = "#FF0000";
+        context.fillRect(10, 10, (player.health / 100) * 140, 25);
+        context.stroke();
+        context.fillStyle = "white";
+        context.textAlign = "left";
+        context.fillText("Health: " + player.health, 30, 32);
+    }
+
+    function updateHackerSkill() {
+        context.fillStyle = "green";
+        context.textAlign = "left";
+        context.fillText("hacker skill: " + player.hackerSkill, 30, 32);
+        context.fillStyle = "#FF0000";
+        context.fillRect(10, 10, (player.hackerSkill / 100) * 1, 45);
+        context.stroke();
+    }
+
+
+    function isNearComputer() {
+        if (player.y <= (computer.y + enemy.viewDistance + 23) &&
+            player.y >= (computer.y - enemy.viewDistance) &&
+            player.x <= (computer.x + enemy.viewDistance + 32) &&
+            player.x >= (computer.x - enemy.viewDistance)) {
+            console.log("near computer");
+            context.fillStyle = "black";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.stroke();
+            context.fillStyle = "green";
+            context.font = "24px Helvetica";
+            context.textAlign = "left";
+            context.textBaseline = "top";
+            context.fillText("Welcome to uOS v1.0 ", 20, 10);
+            window.setTimeout(500);
+            context.fillText("user$> ", 20, 35);
+
+
+        }
+
+    }
+
+
+
+    function isNearHPBox() {
+
+        if (
+            player.y <= (hpBox.y + enemy.viewDistance + 64) &&
+            player.y >= (hpBox.y - enemy.viewDistance - 64) &&
+            player.x <= (hpBox.x + enemy.viewDistance + 64) &&
+            player.x >= (hpBox.x - enemy.viewDistance - 64)) {
+            console.log("healing!");
+            if (player.health <= 100) {
+                hpBox.restoreHealth = player.health - 100;
+                player.health += hpBox.restoreHealth;
+            }
+
+        }
+
+    }
+
+    function moveEnemy() {
+        if (
+            player.y <= (enemy.y + enemy.viewDistance + 64) &&
+            player.y >= (enemy.y - enemy.viewDistance - 64) &&
+            player.x <= (enemy.x + enemy.viewDistance + 64) &&
+            player.x >= (enemy.x - enemy.viewDistance - 64)) {
+            console.log("seen on enemys Y");
+            var audio = new Audio('sounds/theWanderer_Scream.m4a');
+            audio.play();
+            if (player.x >= (enemy.x)) {
+                enemy.x -= enemy.speed;
+            }
+            if (player.x >= (enemy.x)) {
+                enemy.x -= enemy.speed;
+            }
+        }
+    }
+
+    function checkWallCollision() {
+        if (player.y <= 0) {
+            console.log("y")
+            player.y += 64;
+        }
+        if (player.x <= 0) {
+            console.log("x")
+            player.x += 64;
+        }
+        if (enemy.y <= 0) {
+            console.log("y")
+            enemy.y += 64;
+        }
+        if (enemy.x <= 0) {
+            console.log("x")
+            enemy.x += 64;
+        }
+    }
+
+    //   function updateMouseCoords(){
+    //           document.onmousemove = function(e){
+    //           cursorX = e.pageX;
+    //           cursorY = e.pageY;
+    //           context.fillStyle = "green";
+    //           context.font = "24px WhiteRabbit";
+    //           context.textAlign = "left";
+    //           context.textBaseline = "top";
+    //           context.fillText("x" + cursorX + "y" + cursorY , 20 ,10);
+    //
+    //       }
+    //   }
+    //   function drawViewLine(){
+    //       var cursorX;
+    //       var cursorY;
+    //      context.beginPath();
+    //     context.moveTo(player.x,player.y);
+    //      context.lineTo(cursorX,cursorY);
+    //     context.stroke(); 
+    //     console.log("drawing line")
+    // }
+    function reducedSpeed() {
+        player.speed = player.weakSpeed;
+    }
+    // The main game loop
+    var main = function() {
+        var now = Date.now();
+        var delta = now - then;
+        update(delta / 1000);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        render();
+        updateHealth();
+        moveEnemy();
+
+
+        if (player.health <= 20) {
+            reducedSpeed();
+        } else {
+            player.speed = 300;
+        }
+        if (player.health <= 0) {
+            dieEvent();
+        }
+
+
+        checkWallCollision();
+        isNearHPBox();
+        isNearComputer();
+        //updateMouseCoords();
+        //drawViewLine();
+        then = now;
+
+        // Request to do this again ASAP
+        requestAnimationFrame(main);
+    };
+
+    // Cross-browser support for requestAnimationFrame
+    var w = window;
+    requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
+
+    // Let's play this game!
+    var then = Date.now();
+    reset();
+    main();
+</script>
+<style>
+    @font-face {
+        font-family: WhiteRabbit;
+        src: url(http://billischill.ddns.net/fonts/whiterabbit.ttf);
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+</style>

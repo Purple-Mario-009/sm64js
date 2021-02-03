@@ -1267,3 +1267,4 @@ class Camera {
 }
 
 export const CameraInstance = new Camera()
+

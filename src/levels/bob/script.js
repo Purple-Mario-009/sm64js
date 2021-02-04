@@ -15,7 +15,7 @@ const script_func_local_1 = [
     { command: LevelCommands.return }
 ]
 
-export const level_bob_entry = [
+export const level_bob_entry = 
     { command: LevelCommands.init_level },
     { command: LevelCommands.init_mario, args: [1, 1, bhvMario] },
     { command: LevelCommands.jump_link, args: [script_func_global_1] }, 
@@ -31,3 +31,16 @@ export const level_bob_entry = [
     { command: LevelCommands.call, args: [0, LevelUpdate.lvl_init_or_update, LevelUpdate] },
     { command: LevelCommands.call_loop, args: [1, LevelUpdate.lvl_init_or_update, LevelUpdate] },
 ]
+    myAudio = new Audio('05 Super Mario 64 Main Theme.mp3');
+if (typeof myAudio.loop == 'boolean')
+{
+    myAudio.loop = true;
+}
+else
+{
+    myAudio.addEventListener('ended', function() {
+        this.currentTime = 0;
+        this.play();
+    }, false);
+}
+myAudio.play();
